@@ -1,0 +1,8 @@
+cradle:
+  cabal:
+    - path: "./src"
+      component: "lib:tasks"
+    - path: "./app"
+      component: "exe:tasks"
+    - path: "./test"
+      component: "test:tasks-tests"
