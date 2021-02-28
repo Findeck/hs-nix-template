@@ -1,8 +1,8 @@
 cradle:
   cabal:
     - path: "./src"
-      component: "lib:tasks"
+      component: "lib:{{cookiecutter.project_name}}"
     - path: "./app"
-      component: "exe:tasks"
+      component: "exe:{{cookiecutter.project_name}}"
     - path: "./test"
-      component: "test:tasks-tests"
+      component: "test:{{cookiecutter.project_name}}-tests"
