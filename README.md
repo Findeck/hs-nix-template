@@ -1,8 +1,8 @@
 # hs-nix-template
 
-[![CI Status](https://github.com/utdemir/hs-nix-template/workflows/nix-build/badge.svg)](https://github.com/utdemir/hs-nix-template/actions)
-
 A [cookiecutter] template which creates a Haskell project that
+
+Forked from [https://github.com/utdemir/hs-nix-template](https://github.com/utdemir/hs-nix-template), check for upstream improvements!
 
 * Can be built with Nix and cabal-install,
 * Has a library, an executable and a test suite,
@@ -18,7 +18,7 @@ A [cookiecutter] template which creates a Haskell project that
 No need to install anything, just run:
 
 ```
-nix-shell -p cookiecutter git --run 'cookiecutter gh:utdemir/hs-nix-template'
+nix-shell -p cookiecutter git --run 'cookiecutter gh:Findeck/hs-nix-template'
 ```
 
 Once that completes, `cd` into the directory and call:
