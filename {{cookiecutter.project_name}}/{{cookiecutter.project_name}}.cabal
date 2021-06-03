@@ -1,36 +1,112 @@
+cabal-version:       2.4
+
 name:                {{cookiecutter.project_name}}
 synopsis:            {{cookiecutter.project_synopsis}}
 version:             0.0.1.0
 homepage:            https://github.com/{{cookiecutter.gh_user}}/{{cookiecutter.project_name}}
-license:             BSD3
+copyright:           Copyright (c) {{cookiecutter.year}} Findeck GmbH
+license-file:        LICENSE
 author:              {{cookiecutter.author_name}}
 maintainer:          {{cookiecutter.author_name}}
 copyright:           {{cookiecutter.author_name}}
 category:            {{cookiecutter.category}}
 build-type:          Simple
-cabal-version:       >=1.10
+extra-source-files:  README.md
+                   , LICENSE
+
+Flag develop
+  Description: Relax compiler options during development.
+  Default:     False
+  Manual:      True
+
+common ghc-options
+  ghc-options:         -Weverything
+                       -Wno-safe
+                       -Wno-unsafe
+                       -Wno-all-missed-specialisations
+                       -Wno-missing-local-signatures
+                       -Wcompat
+                       -- To allow Prelude or Import modules:
+                       -Wno-missing-import-lists
+  if flag(develop)
+    ghc-options:       -Wno-unused-top-binds
+  else
+    ghc-options:       -Werror
+
+common extensions
+  default-extensions:  BangPatterns
+                     , BinaryLiterals
+                     , BlockArguments
+                     , ConstraintKinds
+                     , DataKinds
+                     , DefaultSignatures
+                     , DeriveAnyClass
+                     , DeriveDataTypeable
+                     , DeriveFoldable
+                     , DeriveFunctor
+                     , DeriveGeneric
+                     , DeriveTraversable
+                     , DerivingStrategies
+                     , DisambiguateRecordFields
+                     , DoAndIfThenElse
+                     , DuplicateRecordFields
+                     , EmptyDataDecls
+                     , ExistentialQuantification
+                     , FlexibleContexts
+                     , FlexibleInstances
+                     , FunctionalDependencies
+                     , GADTs
+                     , GeneralizedNewtypeDeriving
+                     , InstanceSigs
+                     , KindSignatures
+                     , LambdaCase
+                     , MultiParamTypeClasses
+                     , MultiWayIf
+                     , NamedFieldPuns
+                     , NumericUnderscores
+                     , OverloadedStrings
+                     , OverloadedLists
+                     , PartialTypeSignatures
+                     , PatternGuards
+                     , PolyKinds
+                     , RankNTypes
+                     , RecordWildCards
+                     , ScopedTypeVariables
+                     , StandaloneDeriving
+                     , TupleSections
+                     , TypeApplications
+                     , TypeFamilies
+                     , TypeSynonymInstances
+                     , ViewPatterns
+                     , NoImplicitPrelude
 
 library
+  import:              ghc-options, extensions
   hs-source-dirs:      src
   default-language:    Haskell2010
-  exposed-modules:     {{cookiecutter.module}}
-  ghc-options:         -Wall -fno-warn-name-shadowing
-  build-depends:       base >= 4.11 && < 5
+  exposed-modules:     Import
+                     , {{cookiecutter.module}}
+  other-modules:       Paths_{{cookiecutter.project_name|replace('-', '_')}}
+  autogen-modules:     Paths_{{cookiecutter.project_name|replace('-', '_')}}
+  build-depends:       base
 
 executable {{cookiecutter.project_name}}
-  main-is:            Main.hs
-  hs-source-dirs:     app
-  default-language:   Haskell2010
-  ghc-options:        -threaded -O2
-  build-depends:      base
-                    , {{cookiecutter.project_name}}
+  import:              ghc-options, extensions
+  main-is:             Main.hs
+  hs-source-dirs:      app
+  default-language:    Haskell2010
+  ghc-options:         -threaded -O2
+  build-depends:       base
+                     , {{cookiecutter.project_name}}
 
 test-suite {{cookiecutter.project_name}}-tests
-  type:             exitcode-stdio-1.0
-  hs-source-dirs:   test
-  main-is:          Main.hs
-  default-language: Haskell2010
-  ghc-options:      -Wall -threaded
-  build-depends:    base >=4.11 && < 5
-                  , {{cookiecutter.project_name}}
-                  , hedgehog
+  import:              ghc-options, extensions
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  ghc-options:         -threaded
+  other-modules:       {{cookiecutter.module}}Spec
+  build-depends:       base
+                     , {{cookiecutter.project_name}}
+                     , hspec

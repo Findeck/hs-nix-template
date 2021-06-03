@@ -1,0 +1,94 @@
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_TAG
+
+image: docker:20.10.6
+
+services:
+  - docker:20.10.6-dind
+
+stages:
+  - Build
+  - Link
+
+variables:
+  # Enable Docker daemon TLS
+  DOCKER_TLS_CERTDIR: "/certs"
+  RESULT_ARTIFACT_NAME: artifact.tar.gz
+
+.login_ci_registry: &login_ci_registry
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+.push_ci_registry: &push_ci_registry
+  - export IMAGE_TAG=$CI_REGISTRY_IMAGE:$TAG
+  - docker import - $CI_COMMIT_SHORT_SHA < $RESULT_ARTIFACT_NAME
+  - docker tag $CI_COMMIT_SHORT_SHA $IMAGE_TAG
+  - docker push $IMAGE_TAG
+
+build:
+  stage: Build
+  image: nixos/nix:2.3.11
+  before_script:
+    - nix-env -iA nixpkgs.cachix nixpkgs.bash nixpkgs.git nixpkgs.openssh
+    #
+    # All from https://docs.gitlab.com/ee/ci/ssh_keys/
+    #
+    # Optionally, if you will be using any Git commands, set the user name and
+    # and email.
+    - git config --global user.email "gitlab-ci@findeck.de"
+    - git config --global user.name "Gitlab CI"
+    #
+    # Run ssh-agent (inside the build environment)
+    - eval $(ssh-agent -s)
+    #
+    # Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+    # We're using tr to fix line endings which makes ed25519 keys work
+    # without extra base64 encoding.
+    # https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    #
+    # Create the SSH directory and give it the right permissions
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    #
+    # From https://docs.gitlab.com/ee/ci/ssh_keys/#verifying-the-ssh-host-keys
+    #
+    # Assuming you created the SSH_KNOWN_HOSTS variable, uncomment the
+    # following two lines.
+    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    #
+    # Setup cachix
+    #
+    - cachix authtoken $CACHIX_AUTH_TOKEN
+    - cachix use findeck
+    - nix path-info --all > /tmp/store-path-pre-build
+  script:
+    - nix-build --attr docker
+    - cp -LR result $RESULT_ARTIFACT_NAME
+  after_script:
+    # push all store paths that were added during the build
+    - bash -c "comm -13 <(sort /tmp/store-path-pre-build | grep -v '\.drv$') <(nix path-info --all | grep -v '\.drv$' | sort) | cachix push findeck"
+  artifacts:
+    name: $CI_PIPELINE_ID__$CI_PROJECT_PATH_SLUG__$CI_JOB_STAGE__$CI_JOB_NAME__$CI_COMMIT_REF_SLUG__$CI_COMMIT_SHORT_SHA
+    paths:
+      - $RESULT_ARTIFACT_NAME
+
+master:
+  stage: Link
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  variables:
+    TAG: master
+  before_script: *login_ci_registry
+  script: *push_ci_registry
+
+tag:
+  stage: Link
+  rules:
+    - if: $CI_COMMIT_TAG
+  variables:
+    TAG: $CI_COMMIT_TAG
+  before_script: *login_ci_registry
+  script: *push_ci_registry

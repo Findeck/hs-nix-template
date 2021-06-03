@@ -1,4 +1,3 @@
 {
-  "haskell.serverExecutablePath": "${workspaceFolder}/hls.sh",
-  "haskell.indentationRules.enabled": false
+  "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix"
 }

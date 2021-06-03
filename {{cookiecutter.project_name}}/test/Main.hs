@@ -1,14 +1,12 @@
-{-# LANGUAGE TemplateHaskell #-}
+module Main (main) where
 
-module Main where
-
-import Hedgehog
-import Hedgehog.Main
-import {{cookiecutter.module}}
-
-prop_test :: Property
-prop_test = property $ do
-  do{{cookiecutter.module}} === "{{cookiecutter.module}}"
+import Import
+import Test.Hspec
+import qualified {{cookiecutter.module}}Spec
 
 main :: IO ()
-main = defaultMain [checkParallel $$(discover)]
+main = hspec spec
+
+spec :: Spec
+spec = do
+  context "{{cookiecutter.module}}" {{cookiecutter.module}}Spec.spec
