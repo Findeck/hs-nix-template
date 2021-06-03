@@ -1,6 +1,6 @@
 module {{cookiecutter.module}}Spec (spec) where
 
-import Import
+import Prelude
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import {{cookiecutter.module}}

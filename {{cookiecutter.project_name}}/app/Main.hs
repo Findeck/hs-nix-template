@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Import
+import Prelude
 import {{cookiecutter.module}}
 
 main :: IO ()

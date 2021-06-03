@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Import
+import Prelude
 import Test.Hspec
 import qualified {{cookiecutter.module}}Spec
 
